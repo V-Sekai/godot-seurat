@@ -32,6 +32,7 @@ height = 8.0
 [node name="SeuratCaptureBox" type="Spatial" parent="."]
 transform = Transform( 1.5, 0, 0, 0, 1, 0, 0, 0, 1.5, 0, 2, 0 )
 script = ExtResource( 1 )
+export_path = "C:/Users/elee/Desktop/export_seurat"
 
 [node name="Ground" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
