@@ -27,16 +27,13 @@ var cancel_capture: bool = false
 
 @export
 var append_nodename_to_path: bool = false
-#if set to true the output path will get the capture settings appended (good for quality comparisons)
+
 @export
 var append_settings_to_path: bool = false
 
 var _capture_in_progress = false
 
 var _editor: EditorInterface = null
-
-#onready var captureDepthShader = preload("capture_depth.shader")
-
 
 func _ready():
 	start_capture = false  # reset the start capture here
@@ -55,12 +52,9 @@ func _process(dt):
 	else:
 		start_capture = false
 
-	#??
 	if cancel_capture:
 		if !_capture_in_progress:
 			cancel_capture = false
-	#	start_capture = false;
-	#	_capture_in_progress = false;
 
 
 func seurat_manifest_start_capture(mf: Dictionary):
@@ -122,7 +116,7 @@ func seurat_manifest_get_view(vp: Viewport, cam: Camera3D, filenamePrefix):
 		{
 			"color":
 			{
-				"path": str(filenamePrefix, "color.png"),
+				"path": str(filenamePrefix, "color.exr"),
 				"channel_0": "R",
 				"channel_1": "G",
 				"channel_2": "B",
@@ -161,25 +155,19 @@ func saveDepthImage(captureVP, filenamePrefix):
 	# export only one channel to save space
 	texData.convert(Image.FORMAT_RH)
 
-	#print("  Saving to ", str(filenamePrefix, "depth.exr"));
 	if texData.save_exr(str(filenamePrefix, "depth.exr")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "depth.exr"))
 
 
 func saveColorImage(captureVP, filenamePrefix):
 	var texData = captureVP.get_texture().get_image()
-	#print("  Saving to ", str(filenamePrefix, "color.png"));
-	if texData.save_png(str(filenamePrefix, "color.png")) != OK:
+	if texData.save_exr(str(filenamePrefix, "color.exr")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "color.png"))
 
 
 # setup the viewport to be able to capture everything we need
 func set_viewport_for_capture(vp: Viewport):
-	vp.hdr = true
-	vp.keep_3d_linear = true
-	vp.render_target_update_mode = Viewport.UPDATE_ALWAYS
-	vp.render_target_v_flip = true
-	#vp.transparent_bg = true;
+	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	vp.shadow_atlas_size = shadow_atlas_size
 
 
@@ -326,15 +314,18 @@ func perform_capture():
 			captureCam.look_at_from_position(camPosition, camPosition + viewDir, upDir)
 
 			var filenamePrefix = "view%03d_cubeface%d_" % [viewGroup_i, view_i]
-			#print("  Capturing: ", filenamePrefix)
-
+			
 			screenSpaceQuad.visible = true  # first make the depth capture screen space quad visible and capture the depth
+			var frame_delay = 4
+			for i in range(frame_delay):
+				await get_tree().physics_frame
 			saveDepthImage(captureVP, str(path, filenamePrefix))
-
 			screenSpaceQuad.visible = false
+			for i in range(frame_delay):
+				await get_tree().physics_frame
 			saveColorImage(captureVP, str(path, filenamePrefix))
 
-			# Save the current camera and image names in the dictionar so they end up in the manifest.json
+			# Save the current camera and image names in the dictionary so they end up in the manifest.json
 			view_group.append(seurat_manifest_get_view(captureVP, captureCam, filenamePrefix))
 
 			if cancel_capture:
@@ -346,8 +337,8 @@ func perform_capture():
 	captureVP.queue_free()
 	
 	var json = JSON.new()
-	json.stringify(seurat_manifest)
-	outFile.store_line(json.get_data())
+	var output_line : String = json.stringify(seurat_manifest)
+	outFile.store_line(output_line)
 	outFile.close()
 
 	get_tree().paused = was_paused  # reset the state

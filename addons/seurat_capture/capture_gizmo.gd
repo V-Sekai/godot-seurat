@@ -6,15 +6,15 @@ extends EditorNode3DGizmoPlugin
 const CaptureSpatial = preload("res://addons/seurat_capture/capture_spatial.gd")
 
 
-func get_name():
+func _get_gizmo_name():
 	return "SeuratCaptureBox"
 
 
-func has_gizmo(spatial):
+func _has_gizmo(spatial):
 	return spatial is CaptureSpatial
 
 
-func redraw(gizmo):
+func _redraw(gizmo):
 	gizmo.clear()
 
 	var spatial = gizmo.get_spatial_node()
