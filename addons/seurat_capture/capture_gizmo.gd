@@ -1,7 +1,7 @@
 # Gizmo used to show the SeuraCaptureBox settings on the capture_spatial
 # At the moment it has no additional information and just shows the std. scale box as boundaries
-tool
-extends EditorSpatialGizmoPlugin
+@tool
+extends EditorNode3DGizmoPlugin
 
 const CaptureSpatial = preload("res://addons/seurat_capture/capture_spatial.gd")
 
@@ -19,7 +19,7 @@ func redraw(gizmo):
 
 	var spatial = gizmo.get_spatial_node()
 
-	var lines = PoolVector3Array()
+	var lines = PackedVector3Array()
 
 	# the wireframe box of the capture volume
 	lines.push_back(Vector3(-1, -1, -1))  #front
@@ -54,4 +54,4 @@ func redraw(gizmo):
 
 func _init():
 	create_material("main", Color(1, 0, 0))
-	pass
+	

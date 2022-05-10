@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 var SeuratCaptureBox = load("res://addons/seurat_capture/capture_gizmo.gd")

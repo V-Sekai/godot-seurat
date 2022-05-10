@@ -1,24 +1,35 @@
 # This is the Spatial node that exports all settings for a single Seurat Capture
 # It is created from the seurat_capture.gd editor plugin
-tool
-extends Spatial
+@tool
+extends Node3D
 
-export var cube_face_resolution: int = 512  # the resolution of a single cube face during capture
-export var camera_near: float = 0.125  # the capture camera near plane distance
-export var camera_far: float = 4096.0  # the capture camera far plane distance
-export var center_resolution_scale: int = 4  # the center capture should be 4x resolution for anti aliasing
+@export 
+var cube_face_resolution: int = 512  # the resolution of a single cube face during capture
+@export
+var camera_near: float = 0.125  # the capture camera near plane distance
+@export
+var camera_far: float = 4096.0  # the capture camera far plane distance
+@export
+var center_resolution_scale: int = 4  # the center capture should be 4x resolution for anti aliasing
 
-export(String, DIR, GLOBAL) var export_path = "c:/seurat_capture_images"  # the directory where the exported images and manifest is stored
-export var num_captures = 16  # number of samples inside the headbox (in addition to the center sample)
+@export_global_dir
+var export_path = "res://seurat_capture_images"  # the directory where the exported images and manifest is stored
+var num_captures = 16  # number of samples inside the headbox (in addition to the center sample)
 
-export var shadow_atlas_size = 4096
+@export
+var shadow_atlas_size = 4096
 
-export var start_capture: bool = false
-export var cancel_capture: bool = false
+@export
+var start_capture: bool = false
 
-export var append_nodename_to_path: bool = false
+@export
+var cancel_capture: bool = false
+
+@export
+var append_nodename_to_path: bool = false
 #if set to true the output path will get the capture settings appended (good for quality comparisons)
-export var append_settings_to_path: bool = false
+@export
+var append_settings_to_path: bool = false
 
 var _capture_in_progress = false
 
@@ -63,7 +74,7 @@ func seurat_manifest_start_viewgroup(mf: Dictionary):
 	return view_group["views"]
 
 
-func get_transform_as_matrixarray(c: Camera):
+func get_transform_as_matrixarray(c: Camera3D):
 	var t = c.get_camera_transform()
 	var b = t.basis.transposed()
 	var o = t.origin
@@ -87,7 +98,7 @@ func get_transform_as_matrixarray(c: Camera):
 	]
 
 
-func get_projection_as_matrixarray(c: Camera):
+func get_projection_as_matrixarray(c: Camera3D):
 	var S = 1.0 / tan(deg2rad(c.fov / 2))
 
 	var f = c.far
@@ -97,7 +108,7 @@ func get_projection_as_matrixarray(c: Camera):
 	return [S, 0.0, 0.0, 0.0, 0.0, S, 0.0, 0.0, 0.0, 0.0, a, b, 0.0, 0.0, -1.0, 0.0]
 
 
-func seurat_manifest_get_view(vp: Viewport, cam: Camera, filenamePrefix):
+func seurat_manifest_get_view(vp: Viewport, cam: Camera3D, filenamePrefix):
 	var ret = {
 		"projective_camera":
 		{
@@ -145,7 +156,7 @@ func radicalInverse_vdC(base: int, i: int):
 
 func saveDepthImage(captureVP, filenamePrefix):
 	var tex: ViewportTexture = captureVP.get_texture()
-	var texData: Image = tex.get_data()
+	var texData: Image = tex.get_image()
 
 	# export only one channel to save space
 	texData.convert(Image.FORMAT_RH)
@@ -156,7 +167,7 @@ func saveDepthImage(captureVP, filenamePrefix):
 
 
 func saveColorImage(captureVP, filenamePrefix):
-	var texData = captureVP.get_texture().get_data()
+	var texData = captureVP.get_texture().get_image()
 	#print("  Saving to ", str(filenamePrefix, "color.png"));
 	if texData.save_png(str(filenamePrefix, "color.png")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "color.png"))
@@ -173,9 +184,9 @@ func set_viewport_for_capture(vp: Viewport):
 
 
 func create_depth_capture_quad():
-	var screenSpaceQuad = MeshInstance.new()
+	var screenSpaceQuad = MeshInstance3D.new()
 	var depthCaptureMaterial = ShaderMaterial.new()
-	depthCaptureMaterial.shader = preload("capture_depth.shader")
+	depthCaptureMaterial.shader = preload("capture_depth.gdshader")
 	screenSpaceQuad.extra_cull_margin = 16384
 	var quadmesh = QuadMesh.new()
 	quadmesh.size = Vector2(2, 2)
@@ -200,7 +211,7 @@ func perform_capture():
 	var captureVP = Viewport.new()
 	set_viewport_for_capture(captureVP)
 
-	var captureCam = Camera.new()
+	var captureCam = Camera3D.new()
 	captureCam.near = camera_near
 	captureCam.far = camera_far
 	captureCam.current = true
@@ -245,7 +256,6 @@ func perform_capture():
 		_capture_in_progress = false
 		if _editor:
 			_editor.get_selection().add_node(self)
-		property_list_changed_notify()
 		return
 
 	# cube map look at positions and up vectors used below to setup the camera for each image capture
@@ -295,7 +305,7 @@ func perform_capture():
 
 			localPosition = Vector3(sx, sy, sz)
 
-		var camPosition = self.transform.xform(localPosition)
+		var camPosition = self.transform * localPosition
 
 		print(
 			" Capturing viewGroup ",
@@ -309,8 +319,8 @@ func perform_capture():
 		)
 
 		for view_i in range(0, lookAtDirs.size()):
-			var viewDir = self.transform.basis.xform(lookAtDirs[view_i]).normalized()
-			var upDir = self.transform.basis.xform(lookAtUps[view_i]).normalized()
+			var viewDir = (self.transform.basis * lookAtDirs[view_i]).normalized()
+			var upDir = (self.transform.basis * lookAtUps[view_i]).normalized()
 
 			captureCam.fov = 90  # one cube face spans 90 degree viewing
 			captureCam.look_at_from_position(camPosition, camPosition + viewDir, upDir)
@@ -319,15 +329,9 @@ func perform_capture():
 			#print("  Capturing: ", filenamePrefix)
 
 			screenSpaceQuad.visible = true  # first make the depth capture screen space quad visible and capture the depth
-			captureVP.keep_3d_linear = true
-			yield(get_tree(), "idle_frame")  #? do we really need two frames of waiting here?
-			yield(get_tree(), "idle_frame")
 			saveDepthImage(captureVP, str(path, filenamePrefix))
 
 			screenSpaceQuad.visible = false
-			captureVP.keep_3d_linear = false  # sRGB color
-			#yield(get_tree(), "idle_frame")
-			yield(get_tree(), "idle_frame")
 			saveColorImage(captureVP, str(path, filenamePrefix))
 
 			# Save the current camera and image names in the dictionar so they end up in the manifest.json
@@ -340,8 +344,10 @@ func perform_capture():
 
 	remove_child(captureVP)
 	captureVP.queue_free()
-
-	outFile.store_line(to_json(seurat_manifest))
+	
+	var json = JSON.new()
+	json.stringify(seurat_manifest)
+	outFile.store_line(json.get_data())
 	outFile.close()
 
 	get_tree().paused = was_paused  # reset the state
@@ -357,5 +363,3 @@ func perform_capture():
 
 	if _editor:
 		_editor.get_selection().add_node(self)
-
-	property_list_changed_notify()  # make sure everything is updated in the inspector
