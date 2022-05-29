@@ -13,7 +13,6 @@ void fragment() {
 	float depth = texture(DEPTH_TEXTURE, SCREEN_UV).x;
 	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
 	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
-	float depth_z = world.z;
-	ALPHA = depth_z == 0.0 ? 0.0 : 1.0; 
-    ALBEDO = vec3(depth_z);
+	vec3 world_position = world.xyz / world.w;
+    ALBEDO = vec3(world_position.z);
 }

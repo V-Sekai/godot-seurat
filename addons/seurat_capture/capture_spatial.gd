@@ -126,7 +126,6 @@ func seurat_manifest_get_view(vp: Viewport, cam: Camera3D, filenamePrefix):
 			{
 				"path": str(filenamePrefix, "depth.exr"),
 				"channel_0": "R",
-				"channel_alpha": "A"
 			}
 		},
 	}
@@ -152,7 +151,7 @@ func radicalInverse_vdC(base: int, i: int):
 func saveDepthImage(captureVP : Viewport, filenamePrefix):
 	var tex: ViewportTexture = captureVP.get_texture()
 	var texData: Image = tex.get_image()
-	texData.convert(Image.FORMAT_RGBAF)
+	texData.convert(Image.FORMAT_RH)
 	if texData.save_exr(str(filenamePrefix, "depth.exr")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "depth.exr"))
 
@@ -171,14 +170,23 @@ func set_viewport_for_capture(vp: Viewport):
 
 func create_depth_capture_quad():
 	var screenSpaceQuad = MeshInstance3D.new()
+	screenSpaceQuad.extra_cull_margin = INF
+	var verts = PackedVector3Array()
+	verts.append(Vector3(-1.0, -1.0, 0.0))
+	verts.append(Vector3(-1.0, 3.0, 0.0))
+	verts.append(Vector3(3.0, -1.0, 0.0))
+	# Create an array of arrays.
+	# This could contain normals, colors, UVs, etc.
+	var mesh_array = []
+	mesh_array.resize(Mesh.ARRAY_MAX) #required size for ArrayMesh Array
+	mesh_array[Mesh.ARRAY_VERTEX] = verts #position of vertex array in ArrayMesh Array
+	var mesh : ArrayMesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	var depthCaptureMaterial = ShaderMaterial.new()
 	depthCaptureMaterial.shader = preload("capture_depth.gdshader")
-	screenSpaceQuad.extra_cull_margin = 16384
-	var quadmesh = QuadMesh.new()
-	quadmesh.size = Vector2(2, 2)
-	quadmesh.material = depthCaptureMaterial
-	screenSpaceQuad.mesh = quadmesh
+	screenSpaceQuad.mesh = mesh
 	screenSpaceQuad.visible = false
+	screenSpaceQuad.set_surface_override_material(0, depthCaptureMaterial)
 	return screenSpaceQuad
 
 

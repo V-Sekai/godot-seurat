@@ -45,6 +45,7 @@ environment = SubResource( "Environment_ll7oq" )
 [node name="SeuratCaptureBox" type="Node3D" parent="."]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 2, 0)
 script = ExtResource( "1" )
+cube_face_resolution = 256
 export_path = "./output"
 
 [node name="Ground" type="MeshInstance3D" parent="."]
