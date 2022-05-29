@@ -1,7 +1,27 @@
-[gd_scene load_steps=10 format=3 uid="uid://bogu5nkmurrsc"]
+[gd_scene load_steps=13 format=3 uid="uid://bogu5nkmurrsc"]
 
 [ext_resource type="Script" path="res://addons/seurat_capture/capture_spatial.gd" id="1"]
 [ext_resource type="Shader" path="res://addons/seurat_capture/capture_depth.gdshader" id="2_rw3b6"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_kjf0i"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_pvspo"]
+sky_material = SubResource( "ProceduralSkyMaterial_kjf0i" )
+
+[sub_resource type="Environment" id="Environment_ll7oq"]
+background_mode = 2
+sky = SubResource( "Sky_pvspo" )
+tonemap_mode = 2
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+sdfgi_cascades = 1
+sdfgi_min_cell_size = 31.25
+sdfgi_cascade0_distance = 2000.0
+sdfgi_max_distance = 4000.0
+sdfgi_y_scale = 0
+glow_enabled = true
 
 [sub_resource type="PlaneMesh" id="1"]
 size = Vector2(16, 16)
@@ -27,8 +47,11 @@ shader = ExtResource( "2_rw3b6" )
 
 [node name="capture_sample" type="Node3D"]
 
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( "Environment_ll7oq" )
+
 [node name="SeuratCaptureBox" type="Node3D" parent="."]
-transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 1.5, 0, 2, 0)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 2, 0)
 script = ExtResource( "1" )
 export_path = "./output"
 
@@ -62,6 +85,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4, -2)
 mesh = SubResource( "7" )
 
 [node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.999976, 0, 0.00698117, 0, 1, 0, -0.00698117, 0, -0.999976, 0, 2.09, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D"]
 mesh = SubResource( "QuadMesh_o63qo" )
