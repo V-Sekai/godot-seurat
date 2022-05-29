@@ -1,7 +1,6 @@
-[gd_scene load_steps=13 format=3 uid="uid://bogu5nkmurrsc"]
+[gd_scene load_steps=10 format=3 uid="uid://bogu5nkmurrsc"]
 
 [ext_resource type="Script" path="res://addons/seurat_capture/capture_spatial.gd" id="1"]
-[ext_resource type="Shader" path="res://addons/seurat_capture/capture_depth.gdshader" id="2_rw3b6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_kjf0i"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -37,13 +36,6 @@ size = Vector3(1, 4, 1)
 
 [sub_resource type="CylinderMesh" id="7"]
 height = 8.0
-
-[sub_resource type="QuadMesh" id="QuadMesh_o63qo"]
-size = Vector2(2, 2)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_lqdj5"]
-render_priority = 0
-shader = ExtResource( "2_rw3b6" )
 
 [node name="capture_sample" type="Node3D"]
 
@@ -83,11 +75,3 @@ mesh = SubResource( "6" )
 [node name="Cylinder" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4, -2)
 mesh = SubResource( "7" )
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.999976, 0, 0.00698117, 0, 1, 0, -0.00698117, 0, -0.999976, 0, 2.09, 0)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D"]
-mesh = SubResource( "QuadMesh_o63qo" )
-skeleton = NodePath("")
-surface_material_override/0 = SubResource( "ShaderMaterial_lqdj5" )
