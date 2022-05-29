@@ -53,6 +53,7 @@ environment = SubResource( "Environment_ll7oq" )
 [node name="SeuratCaptureBox" type="Node3D" parent="."]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 2, 0)
 script = ExtResource( "1" )
+cube_face_resolution = 1024
 export_path = "./output"
 
 [node name="Ground" type="MeshInstance3D" parent="."]
@@ -88,5 +89,7 @@ mesh = SubResource( "7" )
 transform = Transform3D(-0.999976, 0, 0.00698117, 0, 1, 0, -0.00698117, 0, -0.999976, 0, 2.09, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D"]
+extra_cull_margin = 16384.0
 mesh = SubResource( "QuadMesh_o63qo" )
+skeleton = NodePath("")
 surface_material_override/0 = SubResource( "ShaderMaterial_lqdj5" )

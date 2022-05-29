@@ -126,6 +126,7 @@ func seurat_manifest_get_view(vp: Viewport, cam: Camera3D, filenamePrefix):
 			{
 				"path": str(filenamePrefix, "depth.exr"),
 				"channel_0": "R",
+				"channel_alpha": "A"
 			}
 		},
 	}
@@ -148,18 +149,15 @@ func radicalInverse_vdC(base: int, i: int):
 	return float(inverse)
 
 
-func saveDepthImage(captureVP, filenamePrefix):
+func saveDepthImage(captureVP : Viewport, filenamePrefix):
 	var tex: ViewportTexture = captureVP.get_texture()
 	var texData: Image = tex.get_image()
-
-	# export only one channel to save space
-	texData.convert(Image.FORMAT_RH)
-
+	texData.convert(Image.FORMAT_RGBAF)
 	if texData.save_exr(str(filenamePrefix, "depth.exr")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "depth.exr"))
 
 
-func saveColorImage(captureVP, filenamePrefix):
+func saveColorImage(captureVP : Viewport, filenamePrefix):
 	var texData = captureVP.get_texture().get_image()
 	if texData.save_exr(str(filenamePrefix, "color.exr")) != OK:
 		print("ERROR saving depth exr to ", str(filenamePrefix, "color.png"))
