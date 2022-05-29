@@ -314,7 +314,7 @@ func perform_capture():
 			var filenamePrefix = "view%03d_cubeface%d_" % [viewGroup_i, view_i]
 			
 			screenSpaceQuad.visible = true  # first make the depth capture screen space quad visible and capture the depth
-			var frame_delay = 4
+			var frame_delay = 8
 			for i in range(frame_delay):
 				await get_tree().physics_frame
 			saveDepthImage(captureVP, str(path, filenamePrefix))

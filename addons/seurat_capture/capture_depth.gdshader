@@ -12,8 +12,8 @@ void vertex() {
 void fragment() {
 	float depth = texture(DEPTH_TEXTURE, SCREEN_UV).x;
 	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
-	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
 	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
-	vec3 world_position = world.xyz;
-    ALBEDO.r = world_position.z; // This will get clamped to 0-1 in Godot 4.0 if you are reading this later from a Viewport
+	float depth_z = world.z;
+	ALPHA = depth_z == 0.0 ? 0.0 : 1.0; 
+    ALBEDO = vec3(depth_z);
 }
