@@ -1,4 +1,11 @@
 # Seurat Godot Plugin
+
+## Status
+
+Currently broken in Godot Engine 4.0
+
+## Introduction
+
 A Godot editor plugin to capture data for the Google Seurat scene simplification technology.
 
 The version in this repo needs Godot 3.2 to function at the time of writing.
