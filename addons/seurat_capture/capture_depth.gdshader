@@ -1,15 +1,22 @@
 shader_type spatial;
-render_mode cull_disabled, unshaded; // unshaded to get the unmodified color out into the texture
+render_mode cull_disabled,  unshaded, depth_draw_always; // unshaded to get the unmodified color out into the texture
+
+varying mat4 CAMERA;
 
 void vertex() {
-  POSITION = vec4(VERTEX, 1.0); // we render a screen space quad with this shader; so no transform
+  POSITION = vec4(VERTEX, 1.0);
+  CAMERA = INV_VIEW_MATRIX;
 }
 
 void fragment() {
-	float frag_z = texture(DEPTH_TEXTURE, SCREEN_UV).r; // fragment depth in [0, 1]; would be WINDOW_Z for seurat
-	vec4 unproj = INV_PROJECTION_MATRIX * vec4(0.0, 0.0, frag_z * 2.0 - 1.0, 1.0); 
-	float linear_z = -unproj.z / unproj.w; // linear depth in [0, inf]; EYE_Z for seurat
-	//float alpha = (frag_z<1.0)?1.0:0.0; // this currently does not work to export via exr; would be usefull as depth mask
-	if (frag_z == 1.0) linear_z = 0.0; // set to 0.0 when we are at or behind the far plane (seurat will detect this)
-	ALBEDO.rgb = vec3(linear_z);
+	float depth = texture(DEPTH_TEXTURE, SCREEN_UV).x;
+	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
+	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	vec4 world = CAMERA * INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+	vec3 world_position = world.xyz;
+	ALPHA = (depth < 1.0) ? 1.0 : 0.0; 
+	if (depth == 1.0) {
+		world_position.z = 0.0; 
+	} 
+	ALBEDO.xyz = vec3(world_position.z); // This will get clamped to 0-1 in Godot 4.0 if you are reading this later from a Viewport
 }

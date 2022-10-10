@@ -15,12 +15,12 @@ _global_script_class_icons={}
 
 config/name="Seurat Godot Plugin"
 run/main_scene="res://capture_sample/capture_sample.tscn"
+config/features=PackedStringArray("4.0", "Double Precision")
 config/icon="res://addons/seurat_capture/icon.png"
-config/features=PackedStringArray("4.0")
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/seurat_capture/plugin.cfg")
 
 [importer_defaults]
 

@@ -93,7 +93,7 @@ func get_transform_as_matrixarray(c: Camera3D):
 
 
 func get_projection_as_matrixarray(c: Camera3D):
-	var S = 1.0 / tan(deg2rad(c.fov / 2))
+	var S = 1.0 / tan(deg_to_rad(c.fov / 2))
 
 	var f = c.far
 	var n = c.near
@@ -165,7 +165,7 @@ func saveColorImage(captureVP : Viewport, filenamePrefix):
 # setup the viewport to be able to capture everything we need
 func set_viewport_for_capture(vp: Viewport):
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	vp.shadow_atlas_size = shadow_atlas_size
+	vp.positional_shadow_atlas_size = shadow_atlas_size
 
 
 func create_depth_capture_quad():
@@ -238,13 +238,12 @@ func perform_capture():
 	print("Exporting to ", path)
 
 	# create the output directory for the images and manifest
-	var outDir = Directory.new()
-	if !outDir.dir_exists(path):
-		if outDir.make_dir_recursive(path) != OK:
+	if !DirAccess.dir_exists_absolute(path):
+		if DirAccess.make_dir_recursive_absolute(path) != OK:
 			print("ERROR: creating output directory", path, " failed!")
 
-	var outFile = File.new()
-	if outFile.open(str(path, "manifest.json"), File.WRITE) != 0:
+	var outFile : FileAccess = FileAccess.open(str(path, "manifest.json"), FileAccess.WRITE)
+	if outFile == null:
 		print("Error opening output file ", str(path, "manifest.json"))
 		start_capture = false
 		_capture_in_progress = false
@@ -322,7 +321,7 @@ func perform_capture():
 			var filenamePrefix = "view%03d_cubeface%d_" % [viewGroup_i, view_i]
 			
 			screenSpaceQuad.visible = true  # first make the depth capture screen space quad visible and capture the depth
-			var frame_delay = 8
+			var frame_delay = 4
 			for i in range(frame_delay):
 				await get_tree().physics_frame
 			saveDepthImage(captureVP, str(path, filenamePrefix))
@@ -339,8 +338,8 @@ func perform_capture():
 		if cancel_capture:
 			break
 
-	remove_child(captureVP)
-	captureVP.queue_free()
+#	remove_child(captureVP)
+#	captureVP.queue_free()
 	
 	var json = JSON.new()
 	var output_line : String = json.stringify(seurat_manifest)
