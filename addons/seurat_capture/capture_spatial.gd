@@ -184,6 +184,8 @@ func create_depth_capture_quad():
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_array)
 	var depthCaptureMaterial = ShaderMaterial.new()
 	depthCaptureMaterial.shader = preload("capture_depth.gdshader")
+	depthCaptureMaterial.set_shader_parameter("camera_near", camera_near)
+	depthCaptureMaterial.set_shader_parameter("camera_far", camera_far)
 	screenSpaceQuad.mesh = mesh
 	screenSpaceQuad.visible = false
 	screenSpaceQuad.set_surface_override_material(0, depthCaptureMaterial)
